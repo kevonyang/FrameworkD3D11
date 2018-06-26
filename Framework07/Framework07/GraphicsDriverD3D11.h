@@ -19,6 +19,8 @@ public:
 	DirectX::XMMATRIX GetOrthoMatrix() { return _orthoMatrix; }
 	ID3D11Device *GetD3D11Device() { return _device; }
 	ID3D11DeviceContext *GetD3D11DeviceContext(){ return _deviceContext; }
+
+	void SwitchZBuffer(bool on);
 private:
 	ID3D11Device *_device;
 	ID3D11DeviceContext *_deviceContext;
@@ -26,6 +28,7 @@ private:
 	D3D_FEATURE_LEVEL _featureLevel;
 	ID3D11Texture2D *_depthStencilTex;
 	ID3D11DepthStencilState *_depthStencilState;
+	ID3D11DepthStencilState *_depthDisableStencilState;
 	ID3D11DepthStencilView *_depthStencilView;
 	ID3D11RenderTargetView *_renderTargetView;
 	ID3D11RasterizerState *_rasterState;

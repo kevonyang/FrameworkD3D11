@@ -114,10 +114,11 @@ bool Graphics::Render()
 	DirectX::XMMATRIX projectionMatrix = _driver->GetProjectionMatrix();
 	DirectX::XMMATRIX orthoMatrix = _driver->GetOrthoMatrix();
 	
+	_driver->SwitchZBuffer(false);
 	_bitmap->Render(_driver->GetD3D11DeviceContext());
-
 	_textureShader->Render(_driver->GetD3D11DeviceContext(), _bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _bitmap->GetTextureView());
-	
+	_driver->SwitchZBuffer(true);
+
 	_driver->EndScene();
 
 	return true;

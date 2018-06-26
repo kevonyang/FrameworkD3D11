@@ -167,6 +167,29 @@ bool GraphicsDriverD3D11::Initialize(HWND hWnd, int width, int height, bool full
 	if (FAILED(res))
 		return false;
 
+	D3D11_DEPTH_STENCIL_DESC depthDisableStencilDesc;
+	ZeroMemory(&depthDisableStencilDesc, sizeof(depthDisableStencilDesc));
+	depthDisableStencilDesc.DepthEnable = false;
+	depthDisableStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisableStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisableStencilDesc.StencilEnable = true;
+	depthDisableStencilDesc.StencilReadMask = 0xFF;
+	depthDisableStencilDesc.StencilWriteMask = 0xFF;
+
+	depthDisableStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisableStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisableStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisableStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	depthDisableStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisableStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisableStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisableStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	res = _device->CreateDepthStencilState(&depthDisableStencilDesc, &_depthDisableStencilState);
+	if (FAILED(res))
+		return false;
+
 	_deviceContext->OMSetDepthStencilState(_depthStencilState, 1);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
@@ -237,6 +260,12 @@ void GraphicsDriverD3D11::Shutdown()
 		_depthStencilState = NULL;
 	}
 
+	if (_depthDisableStencilState)
+	{
+		_depthDisableStencilState->Release();
+		_depthDisableStencilState = NULL;
+	}
+
 	if (_depthStencilTex)
 	{
 		_depthStencilTex->Release();
@@ -293,4 +322,12 @@ void GraphicsDriverD3D11::BeginScene(float red, float green, float blue, float a
 void GraphicsDriverD3D11::EndScene()
 {
 	_swapChain->Present(_vSync ? 1 : 0, 0);
+}
+
+void GraphicsDriverD3D11::SwitchZBuffer(bool on)
+{
+	if (on)
+		_deviceContext->OMSetDepthStencilState(_depthStencilState, 1);
+	else
+		_deviceContext->OMSetDepthStencilState(_depthDisableStencilState, 1);
 }
