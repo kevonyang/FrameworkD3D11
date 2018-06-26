@@ -1,0 +1,28 @@
+cbuffer LightBuffer:register(b0)
+{
+	float4 LightColor;
+	float3 LightDir;
+	float Padding;
+};
+
+Texture2D ShaderTexture;
+SamplerState Sampler;
+
+struct PSInput
+{
+	float4 Pos:SV_POSITION;
+	float2 Texcoord:TEXCOORD0;
+	float3 Normal:NORMAL;
+};
+
+float4 PSMain(PSInput input):SV_TARGET
+{
+	float4 output;
+	output = ShaderTexture.Sample(Sampler, input.Texcoord);
+	float3 reverse = -LightDir;
+	float intensity = saturate(dot(reverse, input.Normal));
+	float4 color = LightColor * intensity;
+	output = output * color;
+
+	return output;
+}
