@@ -12,6 +12,8 @@
 #include "TextMesh.h"
 #include "FontShader.h"
 #include "Font.h"
+#include "Root.h"
+#include "Input.h"
 
 Graphics::Graphics() : _window(NULL), _driver(NULL), _camera(NULL), _bitmap(NULL), _textureShader(NULL), _dirLight(NULL), _fontShader(NULL), _text(NULL)
 {
@@ -141,6 +143,15 @@ bool Graphics::Render()
 	_driver->SwitchBlend(true);
 	_bitmap->Render(_driver->GetD3D11DeviceContext());
 	_textureShader->Render(_driver->GetD3D11DeviceContext(), _bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _bitmap->GetTextureView());
+	
+	Input *input = Root::GetInstance()->GetInput();
+	std::ostringstream oss;
+	oss << input->GetMouseX() << "  " << input->GetMouseY();
+	std::string str = oss.str();
+	int x = input->GetMouseX() - _window->GetWidth() / 2;
+	int y = _window->GetHeight() / 2 - input->GetMouseY();
+	_text->UpdateSentence(_driver->GetD3D11DeviceContext(), (char*)str.c_str(), x, y);
+
 	_text->Render(_driver->GetD3D11DeviceContext());
 	_fontShader->Render(_driver->GetD3D11DeviceContext(), _text->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _text->GetFont()->GetTextureView());
 	_driver->SwitchBlend(false);
