@@ -6,3 +6,5 @@
 05 load model
 06 ambient and specular light
 07 2D Bitmap
+08 text
+09 input
