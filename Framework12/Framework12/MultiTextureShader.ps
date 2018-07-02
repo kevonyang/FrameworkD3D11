@@ -1,0 +1,22 @@
+struct PSInput
+{
+	float4 Pos:SV_POSITION;
+	float2 Texcoord:TEXCOORD0;
+};
+
+Texture2D Tex[2];
+SamplerState Sampler;
+
+float4 PSMain(PSInput input):SV_TARGET
+{
+	float4 output;
+	float4 color1;
+	float4 color2;
+	color1 = Tex[0].Sample(Sampler, input.Texcoord);
+	color2 = Tex[1].Sample(Sampler, input.Texcoord);
+
+	output = color1 * color2 * 2.0;
+	output = saturate(output);
+	
+	return output;
+}
