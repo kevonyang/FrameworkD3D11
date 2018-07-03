@@ -1,0 +1,56 @@
+cbuffer LightBuffer:register(b0)
+{
+	float4 LightAmbient;
+	float4 LightDiffuse;
+	float4 LightSpecular;
+	float3 LightDir;
+	float DiffusePower;
+	float SpecularPower;
+	float SpecularHardness;
+};
+
+Texture2D Tex[2];
+SamplerState Sampler;
+
+struct PSInput
+{
+	float4 Pos:SV_POSITION;
+	float2 Texcoord:TEXCOORD0;
+	float3 Normal:NORMAL;
+	float3 Tangent:TANGENT;
+	float3 Binormal:BINORMAL;
+	float3 ViewDir:TEXCOORD1;
+};
+
+float4 PSMain(PSInput input):SV_TARGET
+{
+	float4 texColor = Tex[0].Sample(Sampler, input.Texcoord);
+	float4 bumpColor = Tex[1].Sample(Sampler, input.Texcoord);
+	bumpColor = bumpColor * 2.0f - 1.0f;
+	float3 bumpNormal = bumpColor.x * input.Tangent + bumpColor.y * input.Binormal + bumpColor.z * input.Normal;
+	bumpNormal = normalize(bumpNormal);
+
+	float4 output;
+	//ambient
+	float4 color = LightAmbient;
+	
+	//diffuse
+	float3 reverse = -LightDir;
+	float intensity = saturate(dot(reverse, bumpNormal));
+	color += LightDiffuse * intensity;
+	color = saturate(color);
+	//texture
+	output = texColor;
+	output = output * color * DiffusePower;
+	
+	//specular
+	float3 H = normalize(reverse + input.ViewDir);
+	float NdotH = dot(bumpNormal, H);
+	float specular = pow(saturate(NdotH), SpecularHardness);
+	float4 specularColor = LightSpecular * specular * SpecularPower;
+	specularColor = saturate(specularColor);
+	output += specularColor;
+	output = saturate(output);
+
+	return output;
+}
